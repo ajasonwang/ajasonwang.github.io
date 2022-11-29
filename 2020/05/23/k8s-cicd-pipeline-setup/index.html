@@ -1,0 +1,855 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Wang Jia">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="在kubernetes集群建立CICD流水线备忘">
+<meta property="og:type" content="article">
+<meta property="og:title" content="k8s ci &amp; cd pipeline">
+<meta property="og:url" content="https://ajasonwang.github.io/2020/05/23/k8s-cicd-pipeline-setup/index.html">
+<meta property="og:site_name" content="TianKong">
+<meta property="og:description" content="在kubernetes集群建立CICD流水线备忘">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://ajasonwang.github.io/album/other/cicdpipeline.jpg">
+<meta property="article:published_time" content="2020-05-23T03:11:14.000Z">
+<meta property="article:modified_time" content="2022-11-08T12:47:15.873Z">
+<meta property="article:author" content="Wang Jia">
+<meta property="article:tag" content="Kubernetes">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://ajasonwang.github.io/album/other/cicdpipeline.jpg">
+  
+  
+  
+  <title>k8s ci &amp; cd pipeline - TianKong</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"ajasonwang.github.io","root":"/","version":"1.9.3","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 5.4.2"><link rel="alternate" href="/atom.xml" title="TianKong" type="application/atom+xml">
+</head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 20vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>TianKong</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                Home
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                Archives
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                Categories
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                Tags
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                About
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="k8s ci &amp; cd pipeline"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2020-05-23 11:11" pubdate>
+          May 23, 2020 am
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          6.8k words
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          57 mins
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">k8s ci &amp; cd pipeline</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <hr>
+<h1 id="Overview"><a href="#Overview" class="headerlink" title="Overview"></a>Overview</h1><p><a href="/album/other/cicdpipeline.jpg"><img src="/album/other/cicdpipeline.jpg" srcset="/img/loading.gif" lazyload></a></p>
+<span id="more"></span>
+
+<h1 id="Setup-nexus-private-registry"><a href="#Setup-nexus-private-registry" class="headerlink" title="Setup nexus private registry"></a>Setup nexus private registry</h1><h4 id="generate-ssl-certificate-and-restart-nexus"><a href="#generate-ssl-certificate-and-restart-nexus" class="headerlink" title="generate ssl certificate and restart nexus"></a>generate ssl certificate and restart nexus</h4><pre><code>export NEXUS_HOST=your_hostname
+export NEXUS_DOMAIN=your_domain_name.com
+export NEXUS_IP_ADDRESS=192.168.10.10
+export NEXUS_SSL_PORT=7777
+
+keytool -genkeypair -keystore keystore.jks -storepass keystorePass -keypass keystorePass -alias jetty -keyalg RSA -keysize 2048 -validity 5000 -dname &quot;CN=$NEXUS_DOMAIN, OU=Example, O=Sonatype, L=Unspecified, ST=Unspecified, C=US&quot; -ext &quot;SAN=DNS:$NEXUS_DOMAIN,IP:$NEXUS_IP_ADDRESS&quot; -ext &quot;BC=ca:true&quot;
+
+openssl req -newkey rsa:4096 -nodes -sha256 -keyout $&#123;nexus_home&#125;/etc/ssl/nexus.key -x509 -days 3650 -out $&#123;nexus_home&#125;/etc/ssl/nexus.cert
+
+ls $&#123;nexus_home&#125;/etc/ssl/
+keystore.jks  nexus.cert  nexus.key
+</code></pre>
+<h4 id="etc-nexus-default-properties"><a href="#etc-nexus-default-properties" class="headerlink" title="etc/nexus-default.properties"></a>etc/nexus-default.properties</h4><pre><code>application-port-ssl=8444
+nexus-args=$&#123;jetty.etc&#125;/jetty.xml,$&#123;jetty.etc&#125;/jetty-http.xml,$&#123;jetty.etc&#125;/jetty-https.xml,$&#123;jetty.etc&#125;/jetty-requestlog.xml
+</code></pre>
+<h4 id="etc-nexus-properties"><a href="#etc-nexus-properties" class="headerlink" title="etc/nexus.properties"></a>etc/nexus.properties</h4><pre><code>application-port-ssl=7777
+</code></pre>
+<h4 id="restart-nexus-service"><a href="#restart-nexus-service" class="headerlink" title="restart nexus service"></a>restart nexus service</h4><pre><code>$&#123;nexus_home&#125;/bin/nexus restart
+</code></pre>
+<h4 id="create-nexus-repository-and-set-Repository-Connectors-in-nexus-UI"><a href="#create-nexus-repository-and-set-Repository-Connectors-in-nexus-UI" class="headerlink" title="create nexus repository and set Repository Connectors in nexus UI"></a>create nexus repository and set Repository Connectors in nexus UI</h4><pre><code>#hosted type repository for docker push
+HTTPS: 7777
+
+#group type repository for docker pull
+HTTPS: 8888
+</code></pre>
+<h4 id="setup-ssl-trust-in-docker-client-node-not-always-necessary"><a href="#setup-ssl-trust-in-docker-client-node-not-always-necessary" class="headerlink" title="setup ssl trust in docker client node(not always necessary)"></a>setup ssl trust in docker client node(not always necessary)</h4><pre><code>#remove old cert
+cd /etc/pki/ca-trust/source/anchors
+rm –f your_domain_name.crt
+
+#client trust
+export DOMAIN_NAME=your_domain_name
+export TCP_PORT=7777
+openssl s_client -connect $DOMAIN_NAME:$TCP_PORT -showcerts &lt;/dev/null 2&gt;/dev/null | openssl x509 -outform PEM | tee /etc/pki/ca-trust/source/anchors/$DOMAIN_NAME.crt
+
+update-ca-trust
+</code></pre>
+<h4 id="configure-etc-docker-daemon-json-and-restart-docker-service"><a href="#configure-etc-docker-daemon-json-and-restart-docker-service" class="headerlink" title="configure /etc/docker/daemon.json and restart docker service"></a>configure /etc/docker/daemon.json and restart docker service</h4><pre><code>&#123;
+    &quot;insecure-registries&quot; : [&quot;your_domain_name:7777&quot;,&quot;your_domain_name:8888&quot;]
+&#125;
+</code></pre>
+<h4 id="restart-docker-service-and-login"><a href="#restart-docker-service-and-login" class="headerlink" title="restart docker service and login"></a>restart docker service and login</h4><pre><code>/bin/systemctl restart docker.service
+
+#test docker login
+docker login your_domain_name:7777
+docker login your_domain_name:8888
+</code></pre>
+<h1 id="Create-k8s-ha-cluster-with-ansible-galaxy-scrips-using-kubeadm"><a href="#Create-k8s-ha-cluster-with-ansible-galaxy-scrips-using-kubeadm" class="headerlink" title="Create k8s ha cluster with ansible-galaxy scrips using kubeadm"></a>Create k8s ha cluster with ansible-galaxy scrips using kubeadm</h1><p>ansible inventory example</p>
+<pre><code>master1   ansible_host=192.168.10.101
+master2   ansible_host=192.168.10.102
+master3   ansible_host=192.168.10.103
+worker1   ansible_host=192.168.10.104
+worker2   ansible_host=192.168.10.105
+
+[center]
+worker2
+
+[k8schaos]
+master1
+
+[k8smaster]
+master2
+master3
+
+[k8sworker]
+worker1
+worker2
+</code></pre>
+<p>install haproxy in center node, configure 3 node master as backend server</p>
+<pre><code>haproxy_conf: |
+    listen k8smaster
+      bind *:6443
+      option tcplog
+      mode tcp
+      balance roundrobin
+      option tcp-check
+      server master1 192.168.10.101:6443 check fall 3 rise 2
+      server master2 192.168.10.102:6443 check fall 3 rise 2
+      server master3 192.168.10.103:6443 check fall 3 rise 2
+</code></pre>
+<p>prepare k8s images, push to private registry and load images to nodes</p>
+<p>install first k8schaos node with kubeadm</p>
+<pre><code>kubeadm init --config /tmp/kubeadm-config.yml --upload-certs --v=5
+</code></pre>
+<p>install two extra k8smaster node and join to cluster<br>install k8sworker node</p>
+<h1 id="Helm-install-jenkins-service-in-k8s"><a href="#Helm-install-jenkins-service-in-k8s" class="headerlink" title="Helm install jenkins service in k8s"></a>Helm install jenkins service in k8s</h1><p>prepare images and helm charts<br>load docker images to nodes first<br>install helm and tiller</p>
+<pre><code>kubectl apply -f rbactiller.yml
+helm init --tiller-image registry.hub.docker.com/jessestuart/tiller:v2.14.2 --stable-repo-url https://kubernetes.oss-cn-hangzhou.aliyuncs.com/charts --service-account=tiller
+</code></pre>
+<p>install nfs-client-provisioner</p>
+<pre><code>helm install --name ndp --values values.yaml --namespace ndp ./nfs-client-provisioner
+</code></pre>
+<p>exec helm install for jenkins</p>
+<pre><code>helm install --name jenkins --values values.yaml --namespace jenkins ./1.9.2/jenkins
+</code></pre>
+<p>install jenkins plugins and adjust settings</p>
+<p>update timezone and security settings:</p>
+<p>1, System.setProperty(‘org.apache.commons.jelly.tags.fmt.timeZone’, ‘Asia/Shanghai’)<br>2, Configure Global Security -&gt; Jenkins’ own user database -&gt; Project-based Matrix Authorization Strategy</p>
+<p>update slave settings:（Docker in Docker）<br>Host Path Volume:<br>   /usr/bin/docker<br>   /var/run/docker.sock</p>
+<p>update default PersistentVolume recycle policy with</p>
+<pre><code>kubectl patch pv $(kubectl get pv,pvc -n jenkins | grep -v NAME | grep jenkins/jenkins | awk &#39;&#123;print $1&#125;&#39; | cut -d&#39;/&#39; -f2) -p &#39;&#123;&quot;spec&quot;:&#123;&quot;persistentVolumeReclaimPolicy&quot;:&quot;Retain&quot;&#125;&#125;&#39;
+</code></pre>
+<h1 id="Create-ci-cd-pipeline-sample-code-in-k8s-non-docker"><a href="#Create-ci-cd-pipeline-sample-code-in-k8s-non-docker" class="headerlink" title="Create ci cd pipeline sample code in k8s (non-docker)"></a>Create ci cd pipeline sample code in k8s (non-docker)</h1><pre><code>pipeline &#123;
+    agent &#123; label &quot;jenkins-jenkins-slave&quot; &#125; // jenkins slave with maven sonar-scanner tools
+    ...
+    options &#123;
+        buildDiscarder(logRotator(numToKeepStr: &#39;5&#39;))
+        preserveStashes()
+        &#123; skipDefaultCheckout() &#125;
+    &#125;
+
+    stages &#123;
+        stage(&quot;Code Checkout&quot;) &#123;
+            steps &#123; ... &#125;
+        &#125;
+
+        stage(&#39;Build&#39;) &#123;
+            steps &#123;
+                script&#123;
+                    try &#123;
+                        script &#123;
+                            try &#123; ... &#125; finally &#123; &#125;
+                        &#125;
+                    &#125; catch(error) &#123;
+                        echo &quot;First build failed, let&#39;s retry if accepted&quot;
+                        retry(2) &#123; // same code as above &#125;
+                    &#125;
+                &#125;
+            &#125;
+        &#125;
+
+        stage(&#39;Assemble &amp; Test&#39;) &#123; ... &#125;
+
+        stage(&#39;Scan &amp; Upload&#39;) &#123;
+            parallel &#123;
+                stage(&#39;Archive Artifacts&#39;) &#123;
+                    steps &#123;
+                        archiveArtifacts &quot;project_name-assembly-$&#123;PKG_VERSION&#125;-SNAPSHOT.zip&quot;
+                    &#125;
+                &#125;
+                stage(&quot;Upload Artifacts to Nexus&quot;) &#123;
+                 steps &#123;
+                     nexusArtifactUploader ...
+                 &#125;
+                &#125;
+                stage(&quot;SonarQube Scan&quot;) &#123;
+                    steps &#123;
+                        script &#123;
+                            if (env.ENABLE_SONAR == &#39;Y&#39;) &#123;
+                                withSonarQubeEnv(&#39;dev_sonarqube&#39;) &#123; // defined in jenkins global setting
+                                    sh &#39;&#39;&#39; ... &#39;&#39;&#39;
+                                &#125;
+                                sleep(120)
+                                timeout(time: 1, unit: &#39;MINUTES&#39;) &#123;
+                                    def qg = waitForQualityGate()
+                                    if (qg.status != &#39;SUCCESS&#39;) &#123;
+                                        echo &quot;Pipeline aborted due to quality gate failure: $&#123;qg.status&#125;&quot;
+                                        // error &quot;Pipeline aborted due to quality gate failure: $&#123;qg.status&#125;&quot;
+                                    &#125;
+                                &#125;
+                            &#125; else &#123; &#125;
+                        &#125;
+                    &#125;
+                &#125;
+            &#125;
+        &#125;
+
+        stage(&#39;Deploy DEV&#39;) &#123;
+            agent &#123; label &quot;jenkins-slave-deploy&quot; &#125; // slave with deploy tools installed, deploy dev by default
+            steps &#123;
+                script &#123; ... &#125;
+            &#125;
+        &#125;
+
+        stage(&#39;Deploy QA&#39;) &#123;
+            agent &#123; label &quot;jenkins-slave-deploy&quot; &#125;
+            when &#123;
+                environment name: &#39;DEPLOY_QA&#39;, value: &#39;Y&#39;
+            &#125;
+            steps &#123;
+                script &#123; // refer dev deploy script &#125;
+            &#125;
+        &#125;
+    &#125;
+&#125;
+</code></pre>
+<h1 id="Create-ci-cd-pipeline-in-k8s-build-docker-image-and-push-to-private-registry"><a href="#Create-ci-cd-pipeline-in-k8s-build-docker-image-and-push-to-private-registry" class="headerlink" title="Create ci cd pipeline in k8s (build docker image and push to private registry)"></a>Create ci cd pipeline in k8s (build docker image and push to private registry)</h1><pre><code>stage(&quot;Build Docker Image&quot;) &#123;
+    steps &#123;
+        script &#123;
+            def app
+
+            stage(&#39;Build image&#39;) &#123;
+                withDockerRegistry(credentialsId: &quot;$&#123;IMAGE_NEXUS_CREDENTIAL_ID&#125;&quot;, url: &quot;http://$&#123;REPO&#125;/v1&quot;) &#123;
+                    app = docker.build(&quot;$&#123;REPO_PUSH&#125;/project_name/app_name-service:$&#123;env.DOMAIN&#125;&quot;, &quot;--label project_name/app_name-service --no-cache --pull --force-rm --build-arg REPO=$&#123;REPO&#125; --build-arg DOMAIN=$&#123;DOMAIN&#125; --build-arg GROUP_ID=$&#123;DOMAIN&#125; --build-arg LAUNCHER_VERSION=$&#123;LAUNCHER_VERSION&#125; --build-arg PKG_VERSION=$&#123;IMAGE_VERSION&#125; --build-arg NEXUS_REPO=$&#123;NEXUS_REPO&#125; .&quot;)
+                &#125;
+            &#125;
+            
+            stage(&#39;Push image&#39;) &#123;
+                withDockerRegistry(credentialsId: &quot;$&#123;IMAGE_NEXUS_CREDENTIAL_ID&#125;&quot;, url: &quot;http://$&#123;REPO_PUSH&#125;/v1&quot;) &#123;
+                    app.push(&quot;$&#123;env.IMAGE_VERSION&#125;-$&#123;env.BUILD_NUMBER&#125;&quot;)
+                    app.push(&quot;$&#123;env.IMAGE_VERSION&#125;-latest&quot;)
+                &#125;
+            &#125;
+        &#125;
+    &#125;
+&#125;
+</code></pre>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E6%8A%80%E6%9C%AF/" class="category-chain-item">技术</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Kubernetes/">#Kubernetes</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>k8s ci &amp; cd pipeline</div>
+      <div>https://ajasonwang.github.io/2020/05/23/k8s-cicd-pipeline-setup/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>Author</div>
+          <div>Wang Jia</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>Posted on</div>
+          <div>May 23, 2020</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>Licensed under</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - Attribution">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2021/08/21/nodelocaldns/" title="Nodelocaldns在最新版kubernetes集群的部署以及问题解决">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Nodelocaldns在最新版kubernetes集群的部署以及问题解决</span>
+                        <span class="visible-mobile">Previous</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2017/10/14/setup-jenkins-with-delegate-to-servlet-container/" title="Jenkins安装配置">
+                        <span class="hidden-mobile">Jenkins安装配置</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;Table of Contents</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">Keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">Blog works best with JavaScript enabled</div>
+  </noscript>
+</body>
+</html>

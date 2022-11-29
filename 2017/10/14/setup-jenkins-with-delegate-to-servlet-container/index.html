@@ -1,0 +1,813 @@
+
+
+<!DOCTYPE html>
+<html lang="en" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Wang Jia">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="Jenkins的安装配置备忘 master setup1, install mysqluse mysql; SET PASSWORD FOR &#39;root&#39;@&#39;%&#39;&#x3D;PASSWORD(&#39;Mysql123&#39;); grant all privileges on *.* to root@&quot;%&quot; identified by &quot;My">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Jenkins安装配置">
+<meta property="og:url" content="https://ajasonwang.github.io/2017/10/14/setup-jenkins-with-delegate-to-servlet-container/index.html">
+<meta property="og:site_name" content="TianKong">
+<meta property="og:description" content="Jenkins的安装配置备忘 master setup1, install mysqluse mysql; SET PASSWORD FOR &#39;root&#39;@&#39;%&#39;&#x3D;PASSWORD(&#39;Mysql123&#39;); grant all privileges on *.* to root@&quot;%&quot; identified by &quot;My">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2017-10-14T08:36:48.000Z">
+<meta property="article:modified_time" content="2022-11-08T12:47:15.892Z">
+<meta property="article:author" content="Wang Jia">
+<meta property="article:tag" content="Jenkins">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>Jenkins安装配置 - TianKong</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"ajasonwang.github.io","root":"/","version":"1.9.3","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 5.4.2"><link rel="alternate" href="/atom.xml" title="TianKong" type="application/atom+xml">
+</head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 20vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>TianKong</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                Home
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                Archives
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                Categories
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                Tags
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                About
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Jenkins安装配置"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2017-10-14 16:36" pubdate>
+          October 14, 2017 pm
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          5.7k words
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          48 mins
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">Jenkins安装配置</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>Jenkins的安装配置备忘</p>
+<h3 id="master-setup"><a href="#master-setup" class="headerlink" title="master setup"></a>master setup</h3><h4 id="1-install-mysql"><a href="#1-install-mysql" class="headerlink" title="1, install mysql"></a>1, install mysql</h4><pre><code>use mysql;
+SET PASSWORD FOR &#39;root&#39;@&#39;%&#39;=PASSWORD(&#39;Mysql123&#39;);
+grant all privileges on *.* to root@&quot;%&quot; identified by &quot;Mysql123&quot;;
+
+mysqladmin -u root password oldpass &quot;newpass&quot;
+</code></pre>
+<span id="more"></span>
+
+<h4 id="2-install-jdk-and-tomcat"><a href="#2-install-jdk-and-tomcat" class="headerlink" title="2, install jdk and tomcat"></a>2, install jdk and tomcat</h4><p>vi ~/.bashrc</p>
+<pre><code>alias l=&quot;ls -l&quot;
+
+export JAVA_HOME=/var/java/jdk1.8.0_121
+export PATH=$JAVA_HOME/bin:$PATH
+export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar
+</code></pre>
+<h4 id="3-configure-mysql"><a href="#3-configure-mysql" class="headerlink" title="3, configure mysql"></a>3, configure mysql</h4><p>create database and tables</p>
+<pre><code>CREATE DATABASE IF NOT EXISTS jenkins DEFAULT CHARSET utf8 COLLATE utf8_general_ci;
+
+USE jenkins;
+
+CREATE TABLE user_roles (
+user_name VARCHAR(15) NOT NULL,
+role_name VARCHAR(15) NOT NULL
+) ENGINE=INNODB CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+CREATE TABLE users (
+user_name VARCHAR(15) NOT NULL,
+user_pass VARCHAR(250) NOT NULL
+) ENGINE=INNODB CHARSET=utf8 COLLATE=utf8_unicode_ci;
+</code></pre>
+<p>digest password and insert data</p>
+<pre><code>./digest.sh -a &quot;SHA-512&quot; -i 1000 -s 16 -k 256 -h &quot;org.apache.catalina.realm.MessageDigestCredentialHandler&quot; admin
+
+insert into user_roles(user_name,role_name) values (&quot;admin&quot;,&quot;admin&quot;);
+insert into users(user_name,user_pass) values (&quot;admin&quot;,&quot;b0ecf0b3b6e99c46b037e38f85c4f2ab2e73d9374b65ee81e517cff99ccb0e7e$1$b7640d2d66a16263f66eabed1f784c87&quot;);    
+</code></pre>
+<h4 id="4-configure-tomcat"><a href="#4-configure-tomcat" class="headerlink" title="4, configure tomcat"></a>4, configure tomcat</h4><p>put mysql driver to tomcat lib directory</p>
+<pre><code>➜ lib pwd
+/data/apache-tomcat-8.5.15/lib
+➜ lib ls -l mysql-connector-java-5.1.26-bin.jar 
+-rwxr-xr-x. 1 jenkins jenkins 855948 7月 24 2013 mysql-connector-java-5.1.26-bin.jar
+</code></pre>
+<p>/data/apache-tomcat-8.5.15/conf/tomcat-users.xml</p>
+<pre><code>&lt;role rolename=&quot;manager-gui&quot;/&gt;
+&lt;user username=&quot;admin&quot; password=&quot;admin&quot; roles=&quot;manager-gui&quot;/&gt;
+</code></pre>
+<p>/data/apache-tomcat-8.5.15/conf/context.xml</p>
+<pre><code>&lt;Resources cachingAllowed=&quot;true&quot; cacheMaxSize=&quot;100000&quot; /&gt;
+</code></pre>
+<p>enable remote access for tomcat admin, webapps/manager/META-INF/context.xml</p>
+<pre><code>&lt;Context antiResourceLocking=&quot;false&quot; privileged=&quot;true&quot; &gt;
+  &lt;!--
+  &lt;Valve className=&quot;org.apache.catalina.valves.RemoteAddrValve&quot;
+         allow=&quot;192\.\d+\.\d+\.\d+|::1|0:0:0:0:0:0:0:1&quot; /&gt;
+  --&gt;
+&lt;/Context&gt;
+</code></pre>
+<p>update server.xml for mysql connection</p>
+<pre><code>&lt;Realm className=&quot;org.apache.catalina.realm.LockOutRealm&quot;&gt;
+    &lt;Realm className=&quot;org.apache.catalina.realm.UserDatabaseRealm&quot;
+                resourceName=&quot;UserDatabase&quot;/&gt;
+    &lt;Realm className=&quot;org.apache.catalina.realm.JDBCRealm&quot;
+        driverName=&quot;org.gjt.mm.mysql.Driver&quot;
+        connectionURL=&quot;jdbc:mysql://localhost:3306/jenkins?autoReconnect=true&amp;amp;user=root&amp;amp;password=Mysql123&quot;
+        userTable=&quot;users&quot; userNameCol=&quot;user_name&quot; userCredCol=&quot;user_pass&quot;
+        userRoleTable=&quot;user_roles&quot; roleNameCol=&quot;role_name&quot;&gt;
+        
+        &lt;!-- digest.bat -a &quot;SHA-512&quot; -i 1000 -s 16 -k 256 -h &quot;org.apache.catalina.realm.MessageDigestCredentialHandler&quot; admin --&gt;
+        &lt;CredentialHandler className=&quot;org.apache.catalina.realm.MessageDigestCredentialHandler&quot;
+                algorithm=&quot;SHA-512&quot;
+                iterations=&quot;1000&quot;
+                keyLength=&quot;256&quot;
+                saltLength=&quot;16&quot; /&gt;
+    &lt;/Realm&gt; 
+&lt;/Realm&gt;
+</code></pre>
+<p><em>setup jenkins authentication to delegate to servlet containler</em></p>
+<h4 id="5-user-and-ssh-key-setup"><a href="#5-user-and-ssh-key-setup" class="headerlink" title="5, user and ssh key setup"></a>5, user and ssh key setup</h4><pre><code>groupadd jenkins
+useradd jenkins -g jenkins
+sudo passwd jenkins
+ssh-keygen -b 2048 -t rsa
+ssh-copy-id -i .ssh/id_rsa.pub jenkins@10.0.0.5
+
+chage -M 99999 jenkins
+chage -l jenkins
+</code></pre>
+<h4 id="6-jenkins-install-and-initialization"><a href="#6-jenkins-install-and-initialization" class="headerlink" title="6, jenkins install and initialization"></a>6, jenkins install and initialization</h4><p>access <a target="_blank" rel="noopener" href="http://10.0.0.3:8081/jenkins/credentials/store/system/domain/_/">http://10.0.0.3:8081/jenkins/credentials/store/system/domain/_/</a> and click “Add Credentials”, choose “SSH Username with private key” and fill<br>username: jenkins<br>Private Key    - Enter directly: that is jenkins master user(jenkins)’s ssh private key</p>
+<h3 id="slave-setup"><a href="#slave-setup" class="headerlink" title="slave setup"></a>slave setup</h3><h4 id="install-jdk-and-maven"><a href="#install-jdk-and-maven" class="headerlink" title="install jdk and maven"></a>install jdk and maven</h4><p>/etc/profile</p>
+<pre><code>export JAVA_HOME=/data/jdk1.8.0_91
+export PATH=/usr/local/nginx/sbin:/usr/local/php/bin:/usr/local/apache/bin:/usr/local/mariadb/bin:$JAVA_HOME/bin:$PATH
+export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar
+</code></pre>
+<p>/home/jenkins/.m2/settings.xml</p>
+<pre><code>&lt;mirror&gt;
+    &lt;id&gt;yourcompany-nexus&lt;/id&gt;
+    &lt;mirrorOf&gt;*&lt;/mirrorOf&gt;
+    &lt;name&gt;yourcompany-nexus&lt;/name&gt;
+    &lt;url&gt;http://120.76.xx.yy:8081/nexus/content/groups/public&lt;/url&gt;
+&lt;/mirror&gt;
+
+&lt;mirror&gt;
+    &lt;id&gt;nexus-aliyun&lt;/id&gt;
+    &lt;mirrorOf&gt;*&lt;/mirrorOf&gt;
+    &lt;name&gt;Nexus aliyun&lt;/name&gt;
+    &lt;url&gt;http://maven.aliyun.com/nexus/content/groups/public&lt;/url&gt;
+&lt;/mirror&gt;
+</code></pre>
+<h3 id="install-fpm"><a href="#install-fpm" class="headerlink" title="install fpm"></a>install fpm</h3><p>通过gem安装fpm库时，可能会报错</p>
+<pre><code>gem install fpm
+
+ERROR:  Loading command: install (LoadError)
+    no such file to load -- zlib
+ERROR:  While executing gem ... (NameError)
+    uninitialized constant Gem::Commands::InstallCommand
+</code></pre>
+<p>解决办法是：</p>
+<pre><code>yum install zlib-devel
+yum install openssl
+</code></pre>
+<p>进入ruby源码文件夹，安装ruby自身提供的zlib包</p>
+<pre><code>make clean
+./configure --with-openssl-dir=/usr/local/openssl
+cd ext/zlib
+ruby ./extconf.rb
+cd ..
+make
+make install
+</code></pre>
+<p>更改gem源为国内源</p>
+<pre><code>gem sources --add http://gems.ruby-china.org/ --remove https://rubygems.org/
+gem sources -l
+</code></pre>
+<h3 id="build-package"><a href="#build-package" class="headerlink" title="build package"></a>build package</h3><pre><code>cat&gt;./pre_install.sh&lt;&lt;EOF
+#!/bin/sh
+. /etc/profile
+host=\$(hostname -s)
+echo &quot;\$host&quot;
+tomcat_dir=/data/tomcat7/tomcat7081
+ps -ef|grep \$tomcat_dir | grep -v grep |awk &#39;&#123;print \$2&#125;&#39; | xargs kill -9
+rm -rf \$tomcat_dir/webapps/carManage/
+rm -rf \$tomcat_dir/work/* \$tomcat_dir/temp/*
+exit 0
+EOF
+
+cat&gt;./post_install.sh&lt;&lt;EOF
+#!/bin/sh
+
+##this script execute after  rpm packege install
+. /etc/profile
+host=\$(hostname -s)
+tomcat_dir=/data/tomcat7/tomcat7081
+echo &quot;\$host&quot;
+cd \$tomcat_dir/bin
+chmod +x ./*.sh
+chown -R tomcat:tomcat \$tomcat_dir\webapps
+sudo -u tomcat ./startup.sh &amp;
+exit 0
+EOF
+
+mkdir -p data/tomcat7/tomcat7081/webapps
+mv carManage/target/carManage.war data/tomcat7/tomcat7081/webapps/
+/usr/local/bin/fpm -s dir -t rpm -n &quot;carManage&quot; -v 1.0.0.$BUILD_NUMBER --pre-install ./pre_install.sh --post-install ./post_install.sh data
+
+sudo rpm -ivh --force --nodeps `ls -rt /home/jenkins/carManage* | tail -n 1`
+</code></pre>
+<h3 id="deploy-server-setting"><a href="#deploy-server-setting" class="headerlink" title="deploy server setting"></a>deploy server setting</h3><pre><code>Cmnd_Alias DEPLOY = /bin/rpm *
+Defaults:jenkins !requiretty
+jenkins     ALL=NOPASSWD:DEPLOY
+</code></pre>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E6%8A%80%E6%9C%AF/" class="category-chain-item">技术</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Jenkins/">#Jenkins</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Jenkins安装配置</div>
+      <div>https://ajasonwang.github.io/2017/10/14/setup-jenkins-with-delegate-to-servlet-container/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>Author</div>
+          <div>Wang Jia</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>Posted on</div>
+          <div>October 14, 2017</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>Licensed under</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - Attribution">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2020/05/23/k8s-cicd-pipeline-setup/" title="k8s ci &amp; cd pipeline">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">k8s ci &amp; cd pipeline</span>
+                        <span class="visible-mobile">Previous</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2017/10/14/aliyun-server-was-hajacked-for-mining-fix/" title="阿里云服务器被发现挖矿程序后的处理">
+                        <span class="hidden-mobile">阿里云服务器被发现挖矿程序后的处理</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;Table of Contents</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">Keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">Blog works best with JavaScript enabled</div>
+  </noscript>
+</body>
+</html>
