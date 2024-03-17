@@ -26,7 +26,7 @@
 <meta property="og:image" content="https://ajasonwang.github.io/album/frp/frp.client.settings.png">
 <meta property="og:image" content="https://ajasonwang.github.io/album/frp/frp.dashboard.png">
 <meta property="article:published_time" content="2024-03-17T01:12:43.000Z">
-<meta property="article:modified_time" content="2024-03-17T01:28:23.677Z">
+<meta property="article:modified_time" content="2024-03-17T01:46:20.372Z">
 <meta property="article:author" content="Wang Jia">
 <meta property="article:tag" content="Linux">
 <meta name="twitter:card" content="summary_large_image">
@@ -223,7 +223,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          352 字
+          344 字
         
       </span>
     
@@ -285,7 +285,12 @@
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs shell">[common]<br><span class="hljs-meta prompt_"># </span><span class="language-bash">如果服务端配置了主域名(subdomain_host)，则客户端自定义域名不能是属于主域名(subdomain_host) 的子域名或者泛域名。</span><br>vhost_http_port = 8016<br>vhost_https_port = 8017<br>subdomain_host = wangjia.xyz<br><br>[n1]<br>type = http<br>subdomain = n1<br></code></pre></td></tr></table></figure>
 
 <p>3，OP配置客户端配置 Frp 协议参数</p>
-<p>1，frp协议类型 http<br>2，域名类型 子域名 n1 匹配cloudflare的A记录<br>3，内网主机地址 OP的IP地址<br>4，内网主机端口 OP的端口</p>
+<ul>
+<li>frp协议类型 http</li>
+<li>域名类型 子域名 n1 匹配cloudflare的A记录</li>
+<li>内网主机地址 OP的IP地址</li>
+<li>内网主机端口 OP的端口</li>
+</ul>
 <p><a href="/album/frp/frp.client.settings.png"><img src="/album/frp/frp.client.settings.png" srcset="/img/loading.gif" lazyload></a></p>
 <p>4，验证</p>
 <p><a href="/album/frp/frp.dashboard.png"><img src="/album/frp/frp.dashboard.png" srcset="/img/loading.gif" lazyload></a></p>
