@@ -6,7 +6,7 @@
   <link href="https://ajasonwang.github.io/atom.xml" rel="self"/>
   
   <link href="https://ajasonwang.github.io/"/>
-  <updated>2022-11-29T01:34:23.684Z</updated>
+  <updated>2024-03-17T01:28:23.677Z</updated>
   <id>https://ajasonwang.github.io/</id>
   
   <author>
@@ -15,6 +15,27 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>frp配置备忘</title>
+    <link href="https://ajasonwang.github.io/2024/03/17/frp/"/>
+    <id>https://ajasonwang.github.io/2024/03/17/frp/</id>
+    <published>2024-03-17T01:12:43.000Z</published>
+    <updated>2024-03-17T01:28:23.677Z</updated>
+    
+    <content type="html"><![CDATA[<p>最近一次OP升级把frp配置搞丢了，重新设置几次不生效，于是有了这个备忘。步骤简记如下：</p><span id="more"></span><p>1，检查 cloudflare 设置的域名A记录</p><p>2，服务端检查（省去通用部分）</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs shell">[common]<br><span class="hljs-meta prompt_"># </span><span class="language-bash">如果服务端配置了主域名(subdomain_host)，则客户端自定义域名不能是属于主域名(subdomain_host) 的子域名或者泛域名。</span><br>vhost_http_port = 8016<br>vhost_https_port = 8017<br>subdomain_host = wangjia.xyz<br><br>[n1]<br>type = http<br>subdomain = n1<br></code></pre></td></tr></table></figure><p>3，OP配置客户端配置 Frp 协议参数</p><p>1，frp协议类型 http<br>2，域名类型 子域名 n1 匹配cloudflare的A记录<br>3，内网主机地址 OP的IP地址<br>4，内网主机端口 OP的端口</p><p><a href="/album/frp/frp.client.settings.png"><img src="/album/frp/frp.client.settings.png"></a></p><p>4，验证</p><p><a href="/album/frp/frp.dashboard.png"><img src="/album/frp/frp.dashboard.png"></a></p>]]></content>
+    
+    
+    <summary type="html">内网穿透</summary>
+    
+    
+    
+    <category term="技术" scheme="https://ajasonwang.github.io/categories/%E6%8A%80%E6%9C%AF/"/>
+    
+    
+    <category term="Linux" scheme="https://ajasonwang.github.io/tags/Linux/"/>
+    
+  </entry>
   
   <entry>
     <title>Nodelocaldns在最新版kubernetes集群的部署以及问题解决</title>
@@ -473,30 +494,6 @@ rm -v !(*.iso|*.zip)
     
     
     <category term="Security" scheme="https://ajasonwang.github.io/tags/Security/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>curl http_code 状态码及意义</title>
-    <link href="https://ajasonwang.github.io/2015/04/01/curl-http_code/"/>
-    <id>https://ajasonwang.github.io/2015/04/01/curl-http_code/</id>
-    <published>2015-03-31T17:41:41.000Z</published>
-    <updated>2022-11-08T12:47:15.845Z</updated>
-    
-    <content type="html"><![CDATA[<p>shell代码:</p><p>curl -I -m 10 -o /dev/null -s -w %{http_code} <a href="http://test.com/">http://test.com</a></p><p>curl爬取过程中，会返回一个http_code，下面是他们的意义信息:</p><p>100：继续  客户端应当继续发送请求。客户端应当继续发送请求的剩余部分，或者如果请求已经完成，忽略这个响应。<br>101： 转换协议  在发送完这个响应最后的空行后，服务器将会切换到在Upgrade 消息头中定义的那些协议。只有在切换新的协议更有好处的时候才应该采取类似措施。<br>102：继续处理   由WebDAV（RFC 2518）扩展的状态码，代表处理将被继续执行。<br>200：请求成功      处理方式：获得响应的内容，进行处理<br>201：请求完成，结果是创建了新资源。新创建资源的URI可在响应的实体中得到    处理方式：爬虫中不会遇到<br>202：请求被接受，但处理尚未完成    处理方式：阻塞等待<br>204：服务器端已经实现了请求，但是没有返回新的信 息。如果客户是用户代理，则无须为此更新自身的文档视图。    处理方式：丢弃</p><span id="more"></span><p>300：该状态码不被HTTP/1.0的应用程序直接使用， 只是作为3XX类型回应的默认解释。存在多个可用的被请求资源。    处理方式：若程序中能够处理，则进行进一步处理，如果程序中不能处理，则丢弃<br>301：请求到的资源都会分配一个永久的URL，这样就可以在将来通过该URL来访问此资源    处理方式：重定向到分配的URL<br>302：请求到的资源在一个不同的URL处临时保存     处理方式：重定向到临时的URL<br>304：请求的资源未更新     处理方式：丢弃<br>400：非法请求     处理方式：丢弃<br>401：未授权     处理方式：丢弃<br>403：禁止     处理方式：丢弃<br>404：没有找到     处理方式：丢弃<br>500：服务器内部错误  服务器遇到了一个未曾预料的状况，导致了它无法完成对请求的处理。一般来说，这个问题都会在服务器端的源代码出现错误时出现。<br>501：服务器无法识别  服务器不支持当前请求所需要的某个功能。当服务器无法识别请求的方法，并且无法支持其对任何资源的请求。<br>502：错误网关  作为网关或者代理工作的服务器尝试执行请求时，从上游服务器接收到无效的响应。<br>503：服务出错   由于临时的服务器维护或者过载，服务器当前无法处理请求。这个状况是临时的，并且将在一段时间以后恢复。</p>]]></content>
-    
-    
-    <summary type="html">&lt;p&gt;shell代码:&lt;/p&gt;
-&lt;p&gt;curl -I -m 10 -o /dev/null -s -w %{http_code} &lt;a href=&quot;http://test.com/&quot;&gt;http://test.com&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;curl爬取过程中，会返回一个http_code，下面是他们的意义信息:&lt;/p&gt;
-&lt;p&gt;100：继续  客户端应当继续发送请求。客户端应当继续发送请求的剩余部分，或者如果请求已经完成，忽略这个响应。&lt;br&gt;101： 转换协议  在发送完这个响应最后的空行后，服务器将会切换到在Upgrade 消息头中定义的那些协议。只有在切换新的协议更有好处的时候才应该采取类似措施。&lt;br&gt;102：继续处理   由WebDAV（RFC 2518）扩展的状态码，代表处理将被继续执行。&lt;br&gt;200：请求成功      处理方式：获得响应的内容，进行处理&lt;br&gt;201：请求完成，结果是创建了新资源。新创建资源的URI可在响应的实体中得到    处理方式：爬虫中不会遇到&lt;br&gt;202：请求被接受，但处理尚未完成    处理方式：阻塞等待&lt;br&gt;204：服务器端已经实现了请求，但是没有返回新的信 息。如果客户是用户代理，则无须为此更新自身的文档视图。    处理方式：丢弃&lt;/p&gt;</summary>
-    
-    
-    
-    <category term="技术" scheme="https://ajasonwang.github.io/categories/%E6%8A%80%E6%9C%AF/"/>
-    
-    
-    <category term="Linux" scheme="https://ajasonwang.github.io/tags/Linux/"/>
     
   </entry>
   

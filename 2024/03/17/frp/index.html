@@ -16,22 +16,25 @@
   <meta name="author" content="Wang Jia">
   <meta name="keywords" content="">
   
-    <meta name="description" content="关于K8S域名解析遭遇5秒延迟的问题（UDP并发导致的内核模块conntrack竞争），早先看到Weaveworks这篇经典文章和最近左耳朵耗子团队赵锟的视频技术分享，一直没有时间部署和验证，今天终于在PC上vagrant的集群操练一把，还是发现一些问题，值得记录一下，先放参考链接： Racy conntrack and DNS lookup timeouts - Weaveworks 经典文章">
+    <meta name="description" content="内网穿透">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Nodelocaldns在最新版kubernetes集群的部署以及问题解决">
-<meta property="og:url" content="https://ajasonwang.github.io/2021/08/21/nodelocaldns/index.html">
+<meta property="og:title" content="frp配置备忘">
+<meta property="og:url" content="https://ajasonwang.github.io/2024/03/17/frp/index.html">
 <meta property="og:site_name" content="TianKong">
-<meta property="og:description" content="关于K8S域名解析遭遇5秒延迟的问题（UDP并发导致的内核模块conntrack竞争），早先看到Weaveworks这篇经典文章和最近左耳朵耗子团队赵锟的视频技术分享，一直没有时间部署和验证，今天终于在PC上vagrant的集群操练一把，还是发现一些问题，值得记录一下，先放参考链接： Racy conntrack and DNS lookup timeouts - Weaveworks 经典文章">
+<meta property="og:description" content="内网穿透">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2021-08-21T03:11:14.000Z">
-<meta property="article:modified_time" content="2022-11-29T01:34:23.684Z">
+<meta property="og:image" content="https://ajasonwang.github.io/album/frp/frp.client.settings.png">
+<meta property="og:image" content="https://ajasonwang.github.io/album/frp/frp.dashboard.png">
+<meta property="article:published_time" content="2024-03-17T01:12:43.000Z">
+<meta property="article:modified_time" content="2024-03-17T01:28:23.677Z">
 <meta property="article:author" content="Wang Jia">
-<meta property="article:tag" content="Kubernetes">
+<meta property="article:tag" content="Linux">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://ajasonwang.github.io/album/frp/frp.client.settings.png">
   
   
   
-  <title>Nodelocaldns在最新版kubernetes集群的部署以及问题解决 - TianKong</title>
+  <title>frp配置备忘 - TianKong</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -197,7 +200,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="Nodelocaldns在最新版kubernetes集群的部署以及问题解决"></span>
+            <span id="subtitle" data-typed-text="frp配置备忘"></span>
           
         </div>
 
@@ -208,8 +211,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2021-08-21 11:11" pubdate>
-          2021年8月21日 上午
+        <time datetime="2024-03-17 09:12" pubdate>
+          2024年3月17日 上午
         </time>
       </span>
     
@@ -220,7 +223,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          3.1k 字
+          352 字
         
       </span>
     
@@ -231,7 +234,7 @@
         
         
         
-          26 分钟
+          3 分钟
         
       </span>
     
@@ -269,69 +272,23 @@
         <div id="board">
           <article class="post-content mx-auto">
             <!-- SEO header -->
-            <h1 style="display: none">Nodelocaldns在最新版kubernetes集群的部署以及问题解决</h1>
+            <h1 style="display: none">frp配置备忘</h1>
             
             
               <div class="markdown-body">
                 
-                <p>关于K8S域名解析遭遇5秒延迟的问题（UDP并发导致的内核模块conntrack竞争），早先看到Weaveworks这篇经典文章和最近左耳朵耗子团队赵锟的视频技术分享，一直没有时间部署和验证，今天终于在PC上vagrant的集群操练一把，还是发现一些问题，值得记录一下，先放参考链接：</p>
-<p><a target="_blank" rel="noopener" href="https://www.weave.works/blog/racy-conntrack-and-dns-lookup-timeouts">Racy conntrack and DNS lookup timeouts - Weaveworks</a> 经典文章</p>
-<p><a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=HxS4s11rmyA">技术分享：Kubernetes Networking Model （赵锟）</a> 耗子出品，必属精品</p>
-<p><a target="_blank" rel="noopener" href="https://bbs.huaweicloud.com/blogs/detail/192337">Coredns+Nodelocaldns cache解决Coredns域名解析延迟</a> 华为这篇文章翻译烂，凑合看</p>
+                <p>最近一次OP升级把frp配置搞丢了，重新设置几次不生效，于是有了这个备忘。步骤简记如下：</p>
 <span id="more"></span>
 
-<table>
-<thead>
-<tr>
-<th align="left">组件</th>
-<th align="left">版本</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="left">K8S集群版本</td>
-<td align="left">v1.21.3</td>
-</tr>
-<tr>
-<td align="left">Containerd版本</td>
-<td align="left">cri-containerd-cni-1.5.4-linux-amd64.tar.gz</td>
-</tr>
-<tr>
-<td align="left">Nodelocaldns版本</td>
-<td align="left">1.17.0</td>
-</tr>
-</tbody></table>
-<p>集群基础镜像</p>
-<figure class="highlight asciidoc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs asciidoc"><span class="hljs-bullet">- </span>pause:3.4.1<br><span class="hljs-bullet">- </span>kube-apiserver:v1.21.3<br><span class="hljs-bullet">- </span>kube-controller-manager:v1.21.3<br><span class="hljs-bullet">- </span>kube-scheduler:v1.21.3<br><span class="hljs-bullet">- </span>kube-proxy:v1.21.3<br><span class="hljs-bullet">- </span>etcd:3.4.13-0<br><span class="hljs-bullet">- </span>coredns:v1.8.0<br></code></pre></td></tr></table></figure>
+<p>1，检查 cloudflare 设置的域名A记录</p>
+<p>2，服务端检查（省去通用部分）</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs shell">[common]<br><span class="hljs-meta prompt_"># </span><span class="language-bash">如果服务端配置了主域名(subdomain_host)，则客户端自定义域名不能是属于主域名(subdomain_host) 的子域名或者泛域名。</span><br>vhost_http_port = 8016<br>vhost_https_port = 8017<br>subdomain_host = wangjia.xyz<br><br>[n1]<br>type = http<br>subdomain = n1<br></code></pre></td></tr></table></figure>
 
-<p>基于vagrant + ansible role的组合搭建一套集群还是很方便的，这次搭建集群顺便彻底用containerd一个解压即可用的二进制包替换了docker，也发现config.toml里面配置的insecure registry用户名密码不生效问题，尚未解决，奇怪的是ctr和crictl命令行带用户名密码去拉镜像是没问题的。</p>
-<p>由于下载google的镜像需要一些办法，所以顺手把相关的镜像已经push在docker.io/ajasonwang下面了，部署过程精简为一个ansible role如下，已省略部分内容：</p>
-<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><code class="hljs yaml"><span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">update</span> <span class="hljs-string">kubelet</span> <span class="hljs-string">dns</span> <span class="hljs-string">setting</span><br>  <span class="hljs-attr">shell:</span> <span class="hljs-string">|</span><br><span class="hljs-string">    sed -i &#x27;s/__PILLAR__DNS__SERVER__/10.96.0.10/g&#x27; /tmp/nodelocaldns.yaml</span><br><span class="hljs-string">    sed -i &#x27;s/__PILLAR__LOCAL__DNS__/169.254.20.10/g&#x27; /tmp/nodelocaldns.yaml</span><br><span class="hljs-string">    sed -i &#x27;s/__PILLAR__DNS__DOMAIN__/cluster.local/g&#x27; /tmp/nodelocaldns.yaml</span><br><span class="hljs-string"></span>  <span class="hljs-attr">run_once:</span> <span class="hljs-literal">true</span><br><br><span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">Pull</span> <span class="hljs-string">nodelocaldns</span> <span class="hljs-string">images</span><br>  <span class="hljs-attr">command:</span> <span class="hljs-string">crictl</span> <span class="hljs-string">pull</span> <span class="hljs-string">--creds</span> <span class="hljs-string">&quot;<span class="hljs-template-variable">&#123;&#123; dockerRegistryUser &#125;&#125;</span>&quot;</span><span class="hljs-string">:&quot;&#123;&#123;</span> <span class="hljs-string">dockerRegistryPasswd</span> <span class="hljs-string">&#125;&#125;&quot;</span> <span class="hljs-string">&quot;<span class="hljs-template-variable">&#123;&#123; dockerInsecureRegistries &#125;&#125;</span>/<span class="hljs-template-variable">&#123;&#123; item &#125;&#125;</span>&quot;</span><br>  <span class="hljs-attr">with_items:</span><br>    <span class="hljs-bullet">-</span> <span class="hljs-string">k8s-dns-node-cache:1.17.0</span><br><br><span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">Install</span> <span class="hljs-string">nodelocaldns</span><br>  <span class="hljs-attr">command:</span> <span class="hljs-string">kubectl</span> <span class="hljs-string">apply</span> <span class="hljs-string">-f</span> <span class="hljs-string">/tmp/nodelocaldns.yaml</span><br>  <span class="hljs-attr">delegate_to:</span> <span class="hljs-string">&quot;<span class="hljs-template-variable">&#123;&#123; play_hosts | first &#125;&#125;</span>&quot;</span><br><br><span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">update</span> <span class="hljs-string">kubelet</span> <span class="hljs-string">dns</span> <span class="hljs-string">setting</span><br>  <span class="hljs-attr">shell:</span> <span class="hljs-string">|</span><br><span class="hljs-string">    sed -i &#x27;s/10.96.0.10/169.254.20.10/g&#x27; /var/lib/kubelet/config.yaml</span><br><span class="hljs-string"></span><br><span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">Restart</span> <span class="hljs-string">kubelet</span> <span class="hljs-string">service</span><br>  <span class="hljs-attr">systemd:</span><br>    <span class="hljs-attr">daemon_reload:</span> <span class="hljs-literal">yes</span><br>    <span class="hljs-attr">name:</span> <span class="hljs-string">kubelet</span><br>    <span class="hljs-attr">state:</span> <span class="hljs-string">restarted</span><br></code></pre></td></tr></table></figure>
-
-<p>按照以上步骤部署nodelocaldns之后在worker节点尝试验证</p>
-<figure class="highlight nestedtext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs nestedtext"><span class="hljs-attribute">cat&gt;dnsutils-for-node-local-dns.yaml&lt;&lt;EOF</span><br><span class="hljs-attribute">apiVersion</span><span class="hljs-punctuation">:</span> <span class="hljs-string">v1</span><br><span class="hljs-attribute">kind</span><span class="hljs-punctuation">:</span> <span class="hljs-string">Pod</span><br><span class="hljs-attribute">metadata</span><span class="hljs-punctuation">:</span><br>  <span class="hljs-attribute">name</span><span class="hljs-punctuation">:</span> <span class="hljs-string">dnsutils</span><br>  <span class="hljs-attribute">namespace</span><span class="hljs-punctuation">:</span> <span class="hljs-string">default</span><br><span class="hljs-attribute">spec</span><span class="hljs-punctuation">:</span><br>  <span class="hljs-attribute">containers</span><span class="hljs-punctuation">:</span><br>  <span class="hljs-bullet">-</span> <span class="hljs-string">name: dnsutils</span><br>    <span class="hljs-attribute">image</span><span class="hljs-punctuation">:</span> <span class="hljs-string">docker.io/ajasonwang/dnsutils:latest</span><br>    <span class="hljs-attribute">command</span><span class="hljs-punctuation">:</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">sleep</span><br>      <span class="hljs-bullet">-</span> <span class="hljs-string">&quot;3600&quot;</span><br>    <span class="hljs-attribute">imagePullPolicy</span><span class="hljs-punctuation">:</span> <span class="hljs-string">IfNotPresent</span><br>  <span class="hljs-attribute">restartPolicy</span><span class="hljs-punctuation">:</span> <span class="hljs-string">Always</span><br>EOF<br></code></pre></td></tr></table></figure>
-
-<p>验证命令：</p>
-<p>  kubectl exec -i -t dnsutils – nslookup kubernetes.default</p>
-<p>居然报解析不到，查看CoreDNS日志</p>
-<p>  kubectl logs –namespace=kube-system -l k8s-app=kube-dns</p>
-<p>错误如下：</p>
-<p>  [INFO] plugin/ready: Still waiting on: “kubernetes”<br>  E0819 14:15:26.023715       1 reflector.go:138] pkg/mod/k8s.io/<a href="mailto:&#x63;&#108;&#105;&#x65;&#110;&#x74;&#x2d;&#103;&#x6f;&#64;&#x76;&#x30;&#46;&#50;&#x31;&#x2e;&#49;">&#x63;&#108;&#105;&#x65;&#110;&#x74;&#x2d;&#103;&#x6f;&#64;&#x76;&#x30;&#46;&#50;&#x31;&#x2e;&#49;</a>/tools/cache/reflector.go:167: Failed to watch *v1.EndpointSlice: failed to list *v1.EndpointSlice: endpointslices.discovery.k8s.io is forbidden: User “system:serviceaccount:kube-system:coredns” cannot list resource “endpointslices” in API group “discovery.k8s.io” at the cluster scope<br>  [INFO] plugin/ready: Still waiting on: “kubernetes”</p>
-<p>进一步搜索发现这个权限错误居然是是coredns的一个bug, 于是编辑coredns的clusterrole配置</p>
-<p>  kubectl edit clusterrole system:coredns</p>
-<p>内容，在最后面追加</p>
-<ul>
-<li>apiGroups:<ul>
-<li>discovery.k8s.io<br>resources:</li>
-<li>endpointslices<br>verbs:</li>
-<li>list</li>
-<li>watch</li>
-</ul>
-</li>
-</ul>
-<p>最终问题解决</p>
-<p>  [root@master1 vagrant]# kubectl exec -i -t dnsutils – nslookup kubernetes.default<br>  Server:        169.254.20.10<br>  Address:    169.254.20.10#53</p>
-<p>  Name:    kubernetes.default.svc.cluster.local<br>  Address: 10.96.0.1</p>
-<p>K8S的新版本总是会有一些bug，好在总有早鸟走在前面。</p>
+<p>3，OP配置客户端配置 Frp 协议参数</p>
+<p>1，frp协议类型 http<br>2，域名类型 子域名 n1 匹配cloudflare的A记录<br>3，内网主机地址 OP的IP地址<br>4，内网主机端口 OP的端口</p>
+<p><a href="/album/frp/frp.client.settings.png"><img src="/album/frp/frp.client.settings.png" srcset="/img/loading.gif" lazyload></a></p>
+<p>4，验证</p>
+<p><a href="/album/frp/frp.dashboard.png"><img src="/album/frp/frp.dashboard.png" srcset="/img/loading.gif" lazyload></a></p>
 
                 
               </div>
@@ -365,7 +322,7 @@
     <div class="post-meta">
       <i class="iconfont icon-tags"></i>
       
-        <a href="/tags/Kubernetes/">#Kubernetes</a>
+        <a href="/tags/Linux/">#Linux</a>
       
     </div>
   
@@ -377,8 +334,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>Nodelocaldns在最新版kubernetes集群的部署以及问题解决</div>
-      <div>https://ajasonwang.github.io/2021/08/21/nodelocaldns/</div>
+      <div>frp配置备忘</div>
+      <div>https://ajasonwang.github.io/2024/03/17/frp/</div>
     </div>
     <div class="license-meta">
       
@@ -390,7 +347,7 @@
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2021年8月21日</div>
+          <div>2024年3月17日</div>
         </div>
       
       
@@ -422,18 +379,12 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2024/03/17/frp/" title="frp配置备忘">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">frp配置备忘</span>
-                        <span class="visible-mobile">上一篇</span>
-                      </a>
-                    
                   </article>
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2020/05/23/k8s-cicd-pipeline-setup/" title="k8s ci &amp; cd pipeline">
-                        <span class="hidden-mobile">k8s ci &amp; cd pipeline</span>
+                      <a href="/2021/08/21/nodelocaldns/" title="Nodelocaldns在最新版kubernetes集群的部署以及问题解决">
+                        <span class="hidden-mobile">Nodelocaldns在最新版kubernetes集群的部署以及问题解决</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>

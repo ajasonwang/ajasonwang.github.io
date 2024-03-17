@@ -4,6 +4,31 @@
   
   
   <entry>
+    <title>frp配置备忘</title>
+    <link href="/2024/03/17/frp/"/>
+    <url>/2024/03/17/frp/</url>
+    
+    <content type="html"><![CDATA[<p>最近一次OP升级把frp配置搞丢了，重新设置几次不生效，于是有了这个备忘。步骤简记如下：</p><span id="more"></span><p>1，检查 cloudflare 设置的域名A记录</p><p>2，服务端检查（省去通用部分）</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs shell">[common]<br><span class="hljs-meta prompt_"># </span><span class="language-bash">如果服务端配置了主域名(subdomain_host)，则客户端自定义域名不能是属于主域名(subdomain_host) 的子域名或者泛域名。</span><br>vhost_http_port = 8016<br>vhost_https_port = 8017<br>subdomain_host = wangjia.xyz<br><br>[n1]<br>type = http<br>subdomain = n1<br></code></pre></td></tr></table></figure><p>3，OP配置客户端配置 Frp 协议参数</p><p>1，frp协议类型 http<br>2，域名类型 子域名 n1 匹配cloudflare的A记录<br>3，内网主机地址 OP的IP地址<br>4，内网主机端口 OP的端口</p><p><a href="/album/frp/frp.client.settings.png"><img src="/album/frp/frp.client.settings.png"></a></p><p>4，验证</p><p><a href="/album/frp/frp.dashboard.png"><img src="/album/frp/frp.dashboard.png"></a></p>]]></content>
+    
+    
+    <categories>
+      
+      <category>技术</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>Linux</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>Nodelocaldns在最新版kubernetes集群的部署以及问题解决</title>
     <link href="/2021/08/21/nodelocaldns/"/>
     <url>/2021/08/21/nodelocaldns/</url>
