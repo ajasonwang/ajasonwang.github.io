@@ -18,23 +18,20 @@
   
     <meta name="description" content="内网穿透">
 <meta property="og:type" content="article">
-<meta property="og:title" content="frp配置备忘">
-<meta property="og:url" content="https://ajasonwang.github.io/2024/03/17/frp/index.html">
+<meta property="og:title" content="赛博佛祖内网穿透踩坑备忘">
+<meta property="og:url" content="https://ajasonwang.github.io/2024/08/17/cloudflare-tunnel/index.html">
 <meta property="og:site_name" content="TianKong">
 <meta property="og:description" content="内网穿透">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://ajasonwang.github.io/album/frp/frp.client.settings.png">
-<meta property="og:image" content="https://ajasonwang.github.io/album/frp/frp.dashboard.png">
-<meta property="article:published_time" content="2024-03-17T01:12:43.000Z">
-<meta property="article:modified_time" content="2024-03-17T01:46:20.372Z">
+<meta property="article:published_time" content="2024-08-17T03:28:43.000Z">
+<meta property="article:modified_time" content="2024-08-17T03:42:29.260Z">
 <meta property="article:author" content="Wang Jia">
 <meta property="article:tag" content="Linux">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://ajasonwang.github.io/album/frp/frp.client.settings.png">
   
   
   
-  <title>frp配置备忘 - TianKong</title>
+  <title>赛博佛祖内网穿透踩坑备忘 - TianKong</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -200,7 +197,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="frp配置备忘"></span>
+            <span id="subtitle" data-typed-text="赛博佛祖内网穿透踩坑备忘"></span>
           
         </div>
 
@@ -211,8 +208,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2024-03-17 09:12" pubdate>
-          2024年3月17日 上午
+        <time datetime="2024-08-17 11:28" pubdate>
+          2024年8月17日 上午
         </time>
       </span>
     
@@ -223,7 +220,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          344 字
+          1.2k 字
         
       </span>
     
@@ -234,7 +231,7 @@
         
         
         
-          3 分钟
+          10 分钟
         
       </span>
     
@@ -272,28 +269,31 @@
         <div id="board">
           <article class="post-content mx-auto">
             <!-- SEO header -->
-            <h1 style="display: none">frp配置备忘</h1>
+            <h1 style="display: none">赛博佛祖内网穿透踩坑备忘</h1>
             
             
               <div class="markdown-body">
                 
-                <p>最近一次OP升级把frp配置搞丢了，重新设置几次不生效，于是有了这个备忘。步骤简记如下：</p>
+                <p>这几年赛博佛祖越来越火，于是决定把vps上frp的方案替换成tunnel方案，并决定用docker部署客户端，踩坑步骤记录如下：</p>
 <span id="more"></span>
 
-<p>1，检查 cloudflare 设置的域名A记录</p>
-<p>2，服务端检查（省去通用部分）</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs shell">[common]<br><span class="hljs-meta prompt_"># </span><span class="language-bash">如果服务端配置了主域名(subdomain_host)，则客户端自定义域名不能是属于主域名(subdomain_host) 的子域名或者泛域名。</span><br>vhost_http_port = 8016<br>vhost_https_port = 8017<br>subdomain_host = wangjia.xyz<br><br>[n1]<br>type = http<br>subdomain = n1<br></code></pre></td></tr></table></figure>
+<p>1，设置 <a target="_blank" rel="noopener" href="https://one.dash.cloudflare.com/">https://one.dash.cloudflare.com/</a> -&gt; networks -&gt; tunnels 步骤较简单，按提示操作即可；</p>
+<p>2，踩坑步骤之一：Openwrt上新建docker目录并设置权限，不然会导致生成的cert.pem没有权限写入本地。这里需要额外说明的是 cloudflare/cloudflared 官方镜像不带sh且默认用户是nonroot，查询这个用户UID花了点时间。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs shell">mkdir -p /mnt/mmcblk2p4/cloudflared/config/<br>chown -R 65532:65532 /mnt/mmcblk2p4/cloudflared/<br>chmod -R 777 /mnt/mmcblk2p4/cloudflared/<br></code></pre></td></tr></table></figure>
 
-<p>3，OP配置客户端配置 Frp 协议参数</p>
-<ul>
-<li>frp协议类型 http</li>
-<li>域名类型 子域名 n1 匹配cloudflare的A记录</li>
-<li>内网主机地址 OP的IP地址</li>
-<li>内网主机端口 OP的端口</li>
-</ul>
-<p><a href="/album/frp/frp.client.settings.png"><img src="/album/frp/frp.client.settings.png" srcset="/img/loading.gif" lazyload></a></p>
-<p>4，验证</p>
-<p><a href="/album/frp/frp.dashboard.png"><img src="/album/frp/frp.dashboard.png" srcset="/img/loading.gif" lazyload></a></p>
+<p>3，登录并生成客户端证书</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">docker run --rm -v /mnt/mmcblk2p4/cloudflared/config/:/home/nonroot/.cloudflared/ cloudflare/cloudflared:2024.1.5 tunnel login<br></code></pre></td></tr></table></figure>
+
+<p>以上步骤完成后会生成 /mnt/mmcblk2p4/cloudflared/config/cert.pem 证书</p>
+<p>4，踩坑步骤之二：运行cloudflared容器，这里最大的坑在于，一定需要将官方的cloudflare/cloudflared:lastet改成cloudflare/cloudflared:2024.1.5这个版本，不然会报错</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">docker run --name tunnel -d --restart always -v /mnt/mmcblk2p4/cloudflared/config/:/home/nonroot/.cloudflared/ cloudflare/cloudflared:2024.1.5 tunnel --no-autoupdate --protocol http2 run --token XXXX<br></code></pre></td></tr></table></figure>
+
+<p>5，简单验证</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">docker run --name tunnel -d --restart always -v /mnt/mmcblk2p4/cloudflared/config/:/home/nonroot/.cloudflared/ cloudflare/cloudflared:2024.1.5 tunnel --no-autoupdate --protocol http2 run --token XXXX<br></code></pre></td></tr></table></figure>
+
+<p>接下来就是访问自己的域名CNAME，看看能不能打开内网openwrt网址了。不得不说这个方案比frp简单且好用。</p>
+<p>6，额外步骤就是关闭Openwrt上的frp服务，路径是<a target="_blank" rel="noopener" href="http://xxxx/cgi-bin/luci/admin/services/frp">http://XXXX/cgi-bin/luci/admin/services/frp</a></p>
+<p>完毕！</p>
 
                 
               </div>
@@ -339,8 +339,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>frp配置备忘</div>
-      <div>https://ajasonwang.github.io/2024/03/17/frp/</div>
+      <div>赛博佛祖内网穿透踩坑备忘</div>
+      <div>https://ajasonwang.github.io/2024/08/17/cloudflare-tunnel/</div>
     </div>
     <div class="license-meta">
       
@@ -352,7 +352,7 @@
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2024年3月17日</div>
+          <div>2024年8月17日</div>
         </div>
       
       
@@ -384,18 +384,12 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2024/08/17/cloudflare-tunnel/" title="赛博佛祖内网穿透踩坑备忘">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">赛博佛祖内网穿透踩坑备忘</span>
-                        <span class="visible-mobile">上一篇</span>
-                      </a>
-                    
                   </article>
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2021/08/21/nodelocaldns/" title="Nodelocaldns在最新版kubernetes集群的部署以及问题解决">
-                        <span class="hidden-mobile">Nodelocaldns在最新版kubernetes集群的部署以及问题解决</span>
+                      <a href="/2024/03/17/frp/" title="frp配置备忘">
+                        <span class="hidden-mobile">frp配置备忘</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>

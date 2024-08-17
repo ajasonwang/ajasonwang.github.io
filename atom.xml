@@ -6,7 +6,7 @@
   <link href="https://ajasonwang.github.io/atom.xml" rel="self"/>
   
   <link href="https://ajasonwang.github.io/"/>
-  <updated>2024-03-17T01:46:20.372Z</updated>
+  <updated>2024-08-17T03:42:29.260Z</updated>
   <id>https://ajasonwang.github.io/</id>
   
   <author>
@@ -15,6 +15,27 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>赛博佛祖内网穿透踩坑备忘</title>
+    <link href="https://ajasonwang.github.io/2024/08/17/cloudflare-tunnel/"/>
+    <id>https://ajasonwang.github.io/2024/08/17/cloudflare-tunnel/</id>
+    <published>2024-08-17T03:28:43.000Z</published>
+    <updated>2024-08-17T03:42:29.260Z</updated>
+    
+    <content type="html"><![CDATA[<p>这几年赛博佛祖越来越火，于是决定把vps上frp的方案替换成tunnel方案，并决定用docker部署客户端，踩坑步骤记录如下：</p><span id="more"></span><p>1，设置 <a href="https://one.dash.cloudflare.com/">https://one.dash.cloudflare.com/</a> -&gt; networks -&gt; tunnels 步骤较简单，按提示操作即可；</p><p>2，踩坑步骤之一：Openwrt上新建docker目录并设置权限，不然会导致生成的cert.pem没有权限写入本地。这里需要额外说明的是 cloudflare/cloudflared 官方镜像不带sh且默认用户是nonroot，查询这个用户UID花了点时间。</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs shell">mkdir -p /mnt/mmcblk2p4/cloudflared/config/<br>chown -R 65532:65532 /mnt/mmcblk2p4/cloudflared/<br>chmod -R 777 /mnt/mmcblk2p4/cloudflared/<br></code></pre></td></tr></table></figure><p>3，登录并生成客户端证书</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">docker run --rm -v /mnt/mmcblk2p4/cloudflared/config/:/home/nonroot/.cloudflared/ cloudflare/cloudflared:2024.1.5 tunnel login<br></code></pre></td></tr></table></figure><p>以上步骤完成后会生成 /mnt/mmcblk2p4/cloudflared/config/cert.pem 证书</p><p>4，踩坑步骤之二：运行cloudflared容器，这里最大的坑在于，一定需要将官方的cloudflare/cloudflared:lastet改成cloudflare/cloudflared:2024.1.5这个版本，不然会报错</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">docker run --name tunnel -d --restart always -v /mnt/mmcblk2p4/cloudflared/config/:/home/nonroot/.cloudflared/ cloudflare/cloudflared:2024.1.5 tunnel --no-autoupdate --protocol http2 run --token XXXX<br></code></pre></td></tr></table></figure><p>5，简单验证</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">docker run --name tunnel -d --restart always -v /mnt/mmcblk2p4/cloudflared/config/:/home/nonroot/.cloudflared/ cloudflare/cloudflared:2024.1.5 tunnel --no-autoupdate --protocol http2 run --token XXXX<br></code></pre></td></tr></table></figure><p>接下来就是访问自己的域名CNAME，看看能不能打开内网openwrt网址了。不得不说这个方案比frp简单且好用。</p><p>6，额外步骤就是关闭Openwrt上的frp服务，路径是<a href="http://xxxx/cgi-bin/luci/admin/services/frp">http://XXXX/cgi-bin/luci/admin/services/frp</a></p><p>完毕！</p>]]></content>
+    
+    
+    <summary type="html">内网穿透</summary>
+    
+    
+    
+    <category term="技术" scheme="https://ajasonwang.github.io/categories/%E6%8A%80%E6%9C%AF/"/>
+    
+    
+    <category term="Linux" scheme="https://ajasonwang.github.io/tags/Linux/"/>
+    
+  </entry>
   
   <entry>
     <title>frp配置备忘</title>
@@ -470,30 +491,6 @@ rm -v !(*.iso|*.zip)
     
     
     <category term="gitee" scheme="https://ajasonwang.github.io/tags/gitee/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>安全上网工具</title>
-    <link href="https://ajasonwang.github.io/2015/04/22/security-tools/"/>
-    <id>https://ajasonwang.github.io/2015/04/22/security-tools/</id>
-    <published>2015-04-22T15:12:12.000Z</published>
-    <updated>2022-11-08T12:47:15.891Z</updated>
-    
-    <content type="html"><![CDATA[<p>关于安全上网的专题，墙内可以关注月光博客 <a href="http://www.williamlong.info/cat/?tags=Security">安全专区</a></p><p>强烈推荐普通人看看这篇文章 <a href="http://www.williamlong.info/archives/3660.html">设计自己的密码规则，实现强壮的自我保护</a></p><p>更专业一点的，推荐 <a href="http://drops.wooyun.org/">乌云知识库</a> <em>这个看起来难度有点大</em></p><p>墙外自不必说，文章就太多了，推荐 <a href="https://program-think.blogspot.com/">编程随想</a> <em>这个需要翻墙，你懂的</em></p><span id="more"></span><p>大概从毕业的时候起就一直关注月光博客，小众软件，善用佳软，对于安全类工具软件一直有不断尝鲜，但是很多用过之后发现不是自己想要的，或者是收费的，所以一段时间之后就删除了，所以至今保留下来的都是典藏版，今天总结一下。</p><p>按重要性优先级排序：</p><p>1，网银密码</p><p>这个必须脑力记忆，不过也是有技巧的</p><p>2，重要网站密码，譬如社保查询之类的</p><p>keepass 支持linux，加密文件可以通过网盘同步 <em>linux下面使用的时候中文字体会变成方框，这个待解决</em></p><p>3，一般性网站</p><p>lastpass 普通版本就够用，支持IE Chrome插件自动填充，不过不建议特别重要的密码用这个保存</p><p><a href="http://flowerpassword.com/">花密</a> 从此上论坛再也不担心密码泄露了</p><p>4，邮件安全</p><p>这个嘛，终极方案还是PGP咯，gmail再好终究只是传输加密，内容还是容易暴露的，推荐：Chrome插件Mailvelope，PC端：gpg4usb</p><p>5，IM安全</p><p>鉴于99.9999%的同学只知道QQ，99.8888%的同学只知道QQ/MSN/SKYPE，我用的Pidgin加otr插件就显得太小众了，不过这个亲测加密有效，加密的聊天内容传输到手机端看到的会是乱码，从此再也不担心网管监控了</p><p>6，VPN （这个其实是另一个话题了）</p><p>关于翻墙的软件和相关话题实在太多了，不一一赘述。不过很多人最大的疑问是：翻墙干什么？呵呵，我想说，当你想看些高端一点的视频教程但是百度却发现找不到资源的时候，上Youtube的体验会让你惊喜。</p><p>暂时只想到这么多。</p>]]></content>
-    
-    
-    <summary type="html">&lt;p&gt;关于安全上网的专题，墙内可以关注月光博客 &lt;a href=&quot;http://www.williamlong.info/cat/?tags=Security&quot;&gt;安全专区&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;强烈推荐普通人看看这篇文章 &lt;a href=&quot;http://www.williamlong.info/archives/3660.html&quot;&gt;设计自己的密码规则，实现强壮的自我保护&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;更专业一点的，推荐 &lt;a href=&quot;http://drops.wooyun.org/&quot;&gt;乌云知识库&lt;/a&gt; &lt;em&gt;这个看起来难度有点大&lt;/em&gt;&lt;/p&gt;
-&lt;p&gt;墙外自不必说，文章就太多了，推荐 &lt;a href=&quot;https://program-think.blogspot.com/&quot;&gt;编程随想&lt;/a&gt; &lt;em&gt;这个需要翻墙，你懂的&lt;/em&gt;&lt;/p&gt;</summary>
-    
-    
-    
-    <category term="技术" scheme="https://ajasonwang.github.io/categories/%E6%8A%80%E6%9C%AF/"/>
-    
-    
-    <category term="Security" scheme="https://ajasonwang.github.io/tags/Security/"/>
     
   </entry>
   

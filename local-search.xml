@@ -4,6 +4,31 @@
   
   
   <entry>
+    <title>赛博佛祖内网穿透踩坑备忘</title>
+    <link href="/2024/08/17/cloudflare-tunnel/"/>
+    <url>/2024/08/17/cloudflare-tunnel/</url>
+    
+    <content type="html"><![CDATA[<p>这几年赛博佛祖越来越火，于是决定把vps上frp的方案替换成tunnel方案，并决定用docker部署客户端，踩坑步骤记录如下：</p><span id="more"></span><p>1，设置 <a href="https://one.dash.cloudflare.com/">https://one.dash.cloudflare.com/</a> -&gt; networks -&gt; tunnels 步骤较简单，按提示操作即可；</p><p>2，踩坑步骤之一：Openwrt上新建docker目录并设置权限，不然会导致生成的cert.pem没有权限写入本地。这里需要额外说明的是 cloudflare/cloudflared 官方镜像不带sh且默认用户是nonroot，查询这个用户UID花了点时间。</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs shell">mkdir -p /mnt/mmcblk2p4/cloudflared/config/<br>chown -R 65532:65532 /mnt/mmcblk2p4/cloudflared/<br>chmod -R 777 /mnt/mmcblk2p4/cloudflared/<br></code></pre></td></tr></table></figure><p>3，登录并生成客户端证书</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">docker run --rm -v /mnt/mmcblk2p4/cloudflared/config/:/home/nonroot/.cloudflared/ cloudflare/cloudflared:2024.1.5 tunnel login<br></code></pre></td></tr></table></figure><p>以上步骤完成后会生成 /mnt/mmcblk2p4/cloudflared/config/cert.pem 证书</p><p>4，踩坑步骤之二：运行cloudflared容器，这里最大的坑在于，一定需要将官方的cloudflare/cloudflared:lastet改成cloudflare/cloudflared:2024.1.5这个版本，不然会报错</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">docker run --name tunnel -d --restart always -v /mnt/mmcblk2p4/cloudflared/config/:/home/nonroot/.cloudflared/ cloudflare/cloudflared:2024.1.5 tunnel --no-autoupdate --protocol http2 run --token XXXX<br></code></pre></td></tr></table></figure><p>5，简单验证</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">docker run --name tunnel -d --restart always -v /mnt/mmcblk2p4/cloudflared/config/:/home/nonroot/.cloudflared/ cloudflare/cloudflared:2024.1.5 tunnel --no-autoupdate --protocol http2 run --token XXXX<br></code></pre></td></tr></table></figure><p>接下来就是访问自己的域名CNAME，看看能不能打开内网openwrt网址了。不得不说这个方案比frp简单且好用。</p><p>6，额外步骤就是关闭Openwrt上的frp服务，路径是<a href="http://xxxx/cgi-bin/luci/admin/services/frp">http://XXXX/cgi-bin/luci/admin/services/frp</a></p><p>完毕！</p>]]></content>
+    
+    
+    <categories>
+      
+      <category>技术</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>Linux</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>frp配置备忘</title>
     <link href="/2024/03/17/frp/"/>
     <url>/2024/03/17/frp/</url>
